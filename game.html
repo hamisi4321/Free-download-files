@@ -1,1 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Racing</title>
 
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+    background: #222;
+    font-family: Arial, sans-serif;
+    touch-action: none;
+}
+
+#game {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background: #555;
+}
+
+#road {
+    position: absolute;
+    width: 70%;
+    height: 100%;
+    left: 15%;
+    background: #333;
+    border-left: 8px solid white;
+    border-right: 8px solid white;
+}
+
+.line {
+    position: absolute;
+    width: 8px;
+    height: 100px;
+    background: white;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#player {
+    position: absolute;
+    width: 55px;
+    height: 95px;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: red;
+    border-radius: 12px;
+    border: 4px solid white;
+}
+
+.enemy {
+    position: absolute;
+    width: 55px;
+    height: 95px;
+    background: blue;
+    border-radius: 12px;
+    border: 4px solid white;
+}
+
+#score {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 10;
+}
+
+#gameOver {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    color: white;
+    z-index: 20;
+    text-align: center;
+    padding-top: 40vh;
+}
+
+#gameOver h1 {
+    font-size: 40px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 14px 30px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div id="road"></div>
+
+    <div id="score">Score: 0</div>
+
+    <div id="player"></div>
+
+    <div id="gameOver">
+        <h1>GAME OVER</h1>
+        <p id="finalScore"></p>
+        <button onclick="location.reload()">RESTART</button>
+    </div>
+
+</div>
+
+<script>
+
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const scoreText = document.getElementById("score");
+const gameOver = document.getElementById("gameOver");
+const finalScore = document.getElementById("finalScore");
+
+let playerX = 50;
+let score = 0;
+let speed = 5;
+let running = true;
+
+player.style.left = playerX + "%";
+
+function createEnemy() {
+
+    const enemy = document.createElement("div");
+    enemy.className = "enemy";
+
+    const lanes = [25, 50, 75];
+    const lane = lanes[Math.floor(Math.random() * lanes.length)];
+
+    enemy.style.left = lane + "%";
+    enemy.style.top = "-120px";
+
+    game.appendChild(enemy);
+
+    let y = -120;
+
+    function moveEnemy() {
+
+        if (!running) return;
+
+        y += speed;
+        enemy.style.top = y + "px";
+
+        const p = player.getBoundingClientRect();
+        const e = enemy.getBoundingClientRect();
+
+        if (
+            p.left < e.right &&
+            p.right > e.left &&
+            p.top < e.bottom &&
+            p.bottom > e.top
+        ) {
+            running = false;
+            gameOver.style.display = "block";
+            finalScore.textContent = "Score: " + score;
+            return;
+        }
+
+        if (y > window.innerHeight) {
+            enemy.remove();
+            score++;
+            scoreText.textContent = "Score: " + score;
+
+            if (score % 5 === 0) {
+                speed += 0.5;
+            }
+
+            return;
+        }
+
+        requestAnimationFrame(moveEnemy);
+    }
+
+    requestAnimationFrame(moveEnemy);
+}
+
+setInterval(() => {
+    if (running) createEnemy();
+}, 1500);
+
+document.addEventListener("touchstart", (e) => {
+
+    if (!running) return;
+
+    const x = e.touches[0].clientX;
+
+    if (x < window.innerWidth / 2) {
+        playerX -= 12;
+    } else {
+        playerX += 12;
+    }
+
+    if (playerX < 25) playerX = 25;
+    if (playerX > 75) playerX = 75;
+
+    player.style.left = playerX + "%";
+});
+
+</script>
+
+</body>
+</html>
