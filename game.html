@@ -34,21 +34,26 @@ body{
     width:70%;
     height:100%;
     background:#303030;
-    border-left:8px solid #fff;
-    border-right:8px solid #fff;
-    overflow:hidden;
+    border-left:8px solid white;
+    border-right:8px solid white;
 }
 
 /* ROAD LINES */
-.line,.line2{
+.line{
     position:absolute;
     width:7px;
     height:100px;
-    background:#fff;
+    background:white;
+    left:33.33%;
 }
 
-.line{left:33.33%}
-.line2{left:66.66%}
+.line2{
+    position:absolute;
+    width:7px;
+    height:100px;
+    background:white;
+    left:66.66%;
+}
 
 /* TREES */
 .tree{
@@ -70,25 +75,32 @@ body{
     top:35px;
 }
 
-/* PLAYER */
-.car{
+/* CARS */
+.car,
+.enemy{
     position:absolute;
     width:58px;
     height:105px;
     border-radius:15px 15px 9px 9px;
+    border:3px solid #111;
+    box-shadow:0 4px 8px #111;
 }
 
 #player{
     bottom:45px;
     left:50%;
     transform:translateX(-50%);
-    background:linear-gradient(90deg,#a90000,#ff2020,#a90000);
-    border:3px solid #111;
+    background:linear-gradient(
+        90deg,
+        #a90000,
+        #ff2020,
+        #a90000
+    );
     z-index:10;
-    box-shadow:0 4px 10px #111;
 }
 
-#player:before{
+.car:before,
+.enemy:before{
     content:"";
     position:absolute;
     width:38px;
@@ -112,122 +124,183 @@ body{
 .light.left{left:7px}
 .light.right{right:7px}
 
-/* ENEMY */
-.enemy{
-    position:absolute;
-    width:58px;
-    height:105px;
-    border-radius:15px 15px 9px 9px;
-    border:3px solid #111;
-    z-index:5;
-    box-shadow:0 4px 8px #111;
-}
-
-.enemy:before{
-    content:"";
-    position:absolute;
-    width:38px;
-    height:38px;
-    left:7px;
-    top:15px;
-    border-radius:8px;
-    background:#bdefff;
-    border:2px solid #111;
-}
-
-/* SCORE */
+/* HUD */
 #score{
     position:absolute;
     top:15px;
     left:15px;
     color:white;
-    font-size:22px;
+    font-size:20px;
     font-weight:bold;
-    z-index:20;
-    text-shadow:2px 2px 3px #000;
-}
-
-#speed{
-    position:absolute;
-    top:45px;
-    left:15px;
-    color:white;
-    font-size:17px;
-    z-index:20;
-    text-shadow:2px 2px 3px #000;
-}
-
-/* NITRO */
-#nitro{
-    position:absolute;
-    right:15px;
-    top:15px;
     z-index:30;
-    padding:13px 18px;
-    border:3px solid #fff;
-    border-radius:12px;
-    background:#ff6a00;
+    text-shadow:2px 2px 3px #000;
+}
+
+#position{
+    position:absolute;
+    top:42px;
+    left:15px;
     color:white;
     font-size:18px;
     font-weight:bold;
-    box-shadow:0 3px 8px #000;
+    z-index:30;
+    text-shadow:2px 2px 3px #000;
 }
 
-#nitro:active{
+/* POWER UPS */
+#powers{
+    position:absolute;
+    right:10px;
+    top:10px;
+    z-index:40;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.power{
+    width:115px;
+    padding:10px 5px;
+    border:2px solid white;
+    border-radius:10px;
+    color:white;
+    font-weight:bold;
+    font-size:15px;
+    background:#222;
+}
+
+.power:active{
     transform:scale(.92);
 }
 
-#nitro.disabled{
-    background:#555;
-    opacity:.7;
+#nitro{
+    background:#e65c00;
 }
 
-/* NITRO EFFECT */
-.nitro-fire{
+#guard{
+    background:#0066cc;
+}
+
+#weapon{
+    background:#a00000;
+}
+
+/* FINISH */
+#finishLine{
     position:absolute;
-    width:20px;
-    height:35px;
-    background:linear-gradient(#fff700,#ff6500,#ff0000);
-    left:19px;
-    top:100px;
-    border-radius:50%;
-    animation:fire .12s infinite alternate;
+    top:-120px;
+    left:15%;
+    width:70%;
+    height:80px;
+    z-index:7;
+
+    background:
+    repeating-linear-gradient(
+        45deg,
+        white 0px,
+        white 20px,
+        black 20px,
+        black 40px
+    );
+
+    border:4px solid white;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    color:red;
+    font-size:25px;
+    font-weight:bold;
 }
 
-@keyframes fire{
-    from{transform:scaleY(1)}
-    to{transform:scaleY(1.4)}
+/* COUNTDOWN */
+#countdown{
+    position:absolute;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-size:90px;
+    font-weight:bold;
+    z-index:100;
+    text-shadow:4px 4px 8px black;
+    background:rgba(0,0,0,.25);
 }
 
-/* GAME OVER */
-#gameOver{
+/* GAME OVER / WIN */
+#result{
     display:none;
     position:absolute;
     inset:0;
-    background:rgba(0,0,0,.78);
+    z-index:200;
+    background:rgba(0,0,0,.82);
     color:white;
-    z-index:50;
     text-align:center;
-    padding-top:32vh;
+    padding-top:28vh;
 }
 
-#gameOver h1{
-    font-size:42px;
-    color:#ff3333;
-    margin-bottom:10px;
+#result h1{
+    font-size:48px;
+    margin-bottom:15px;
 }
 
-#gameOver p{
-    font-size:22px;
+#result p{
+    font-size:24px;
 }
 
-button{
+#restart{
     margin-top:25px;
-    padding:14px 35px;
+    padding:14px 30px;
     border:0;
     border-radius:10px;
     font-size:20px;
     font-weight:bold;
+}
+
+/* NITRO FIRE */
+.fire{
+    position:absolute;
+    width:18px;
+    height:38px;
+    left:17px;
+    top:100px;
+    border-radius:50%;
+    background:linear-gradient(
+        white,
+        yellow,
+        orange,
+        red
+    );
+    animation:fire .1s infinite alternate;
+}
+
+@keyframes fire{
+    from{
+        transform:scaleY(1);
+    }
+    to{
+        transform:scaleY(1.5);
+    }
+}
+
+/* GUARD */
+.guarded{
+    box-shadow:
+        0 0 10px #00aaff,
+        0 0 20px #00aaff,
+        0 0 30px #00aaff !important;
+}
+
+/* WEAPON */
+.bullet{
+    position:absolute;
+    width:8px;
+    height:22px;
+    background:#ffff00;
+    border-radius:5px;
+    z-index:15;
 }
 </style>
 </head>
@@ -237,44 +310,126 @@ button{
 <div id="game">
 
     <div id="road">
+
         <div class="line" id="l1"></div>
         <div class="line" id="l2"></div>
+
         <div class="line2" id="r1"></div>
         <div class="line2" id="r2"></div>
+
     </div>
 
+    <!-- TREES -->
     <div class="tree" style="left:3%;top:100px"></div>
     <div class="tree" style="left:88%;top:220px"></div>
     <div class="tree" style="left:5%;top:500px"></div>
     <div class="tree" style="left:87%;top:650px"></div>
 
-    <div id="score">🏆 Score: 0</div>
-    <div id="speed">⚡ Speed: 5</div>
-
-    <button id="nitro">🔥 NITRO</button>
-
-    <div id="player" class="car">
-        <div class="light left"></div>
-        <div class="light right"></div>
+    <!-- FINISH -->
+    <div id="finishLine">
+        🏁 FINISH 🏁
     </div>
 
-    <div id="gameOver">
-        <h1>GAME OVER</h1>
-        <p id="finalScore"></p>
-        <button onclick="location.reload()">🔄 RESTART</button>
+    <!-- HUD -->
+    <div id="score">
+        🏁 Distance: 0
+    </div>
+
+    <div id="position">
+        🏆 Position: 4/4
+    </div>
+
+    <!-- POWER UPS -->
+    <div id="powers">
+
+        <button class="power" id="nitro">
+            🚀 NITRO
+        </button>
+
+        <button class="power" id="guard">
+            🛡️ GUARD
+        </button>
+
+        <button class="power" id="weapon">
+            🔫 WEAPON
+        </button>
+
+    </div>
+
+    <!-- PLAYER -->
+    <div id="player" class="car">
+
+        <div class="light left"></div>
+        <div class="light right"></div>
+
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div id="countdown">
+        3
+    </div>
+
+    <!-- RESULT -->
+    <div id="result">
+
+        <h1 id="resultTitle">
+            🏆 YOU WIN!
+        </h1>
+
+        <p id="resultText">
+            Umeshinda race!
+        </p>
+
+        <button id="restart"
+                onclick="location.reload()">
+            🔄 RACE AGAIN
+        </button>
+
     </div>
 
 </div>
 
 <script>
 
-const game = document.getElementById("game");
-const player = document.getElementById("player");
-const scoreText = document.getElementById("score");
-const speedText = document.getElementById("speed");
-const gameOver = document.getElementById("gameOver");
-const finalScore = document.getElementById("finalScore");
-const nitroButton = document.getElementById("nitro");
+/* =========================
+   GAME VARIABLES
+========================= */
+
+const game =
+    document.getElementById("game");
+
+const player =
+    document.getElementById("player");
+
+const scoreText =
+    document.getElementById("score");
+
+const positionText =
+    document.getElementById("position");
+
+const finishLine =
+    document.getElementById("finishLine");
+
+const countdown =
+    document.getElementById("countdown");
+
+const result =
+    document.getElementById("result");
+
+const resultTitle =
+    document.getElementById("resultTitle");
+
+const resultText =
+    document.getElementById("resultText");
+
+const nitroButton =
+    document.getElementById("nitro");
+
+const guardButton =
+    document.getElementById("guard");
+
+const weaponButton =
+    document.getElementById("weapon");
 
 const lines = [
     document.getElementById("l1"),
@@ -283,153 +438,323 @@ const lines = [
     document.getElementById("r2")
 ];
 
-let playerLane = 1;
-let score = 0;
-let speed = 5;
-let running = true;
-
-/* NITRO */
-let nitroActive = false;
-let nitroAvailable = true;
-
 const lanes = [25,50,75];
 
+let playerLane = 1;
+
+let playerDistance = 0;
+
+let raceDistance = 5000;
+
+let speed = 5;
+
+let running = false;
+
+let nitroActive = false;
+
+let guardActive = false;
+
+let weaponActive = false;
+
+let enemies = [];
+
+
+/* =========================
+   PLAYER
+========================= */
+
 function movePlayer(){
-    player.style.left = lanes[playerLane] + "%";
+
+    player.style.left =
+        lanes[playerLane] + "%";
 }
 
-/* NITRO FUNCTION */
+
+/* =========================
+   CREATE RACERS
+========================= */
+
+function createRacers(){
+
+    const colors = [
+
+        "linear-gradient(90deg,#0044aa,#0088ff,#0044aa)",
+
+        "linear-gradient(90deg,#111,#555,#111)",
+
+        "linear-gradient(90deg,#ff7b00,#ffc400,#ff7b00)"
+
+    ];
+
+    for(let i=0;i<3;i++){
+
+        const enemy =
+            document.createElement("div");
+
+        enemy.className = "enemy";
+
+        enemy.style.background =
+            colors[i];
+
+        enemy.style.left =
+            lanes[i] + "%";
+
+        enemy.style.top =
+            (window.innerHeight - 170) + "px";
+
+        enemy.dataset.distance = "0";
+
+        game.appendChild(enemy);
+
+        enemies.push(enemy);
+    }
+}
+
+
+/* =========================
+   COUNTDOWN
+========================= */
+
+function startCountdown(){
+
+    let number = 3;
+
+    countdown.textContent = number;
+
+    const timer =
+        setInterval(()=>{
+
+            number--;
+
+            if(number > 0){
+
+                countdown.textContent =
+                    number;
+
+            }else{
+
+                countdown.textContent =
+                    "GO!";
+
+                running = true;
+
+                createRacers();
+
+                setTimeout(()=>{
+
+                    countdown.style.display =
+                        "none";
+
+                },600);
+
+                clearInterval(timer);
+            }
+
+        },1000);
+}
+
+
+/* =========================
+   NITRO
+========================= */
+
 function useNitro(){
 
-    if(!running || !nitroAvailable || nitroActive)
+    if(!running || nitroActive)
         return;
 
     nitroActive = true;
-    nitroAvailable = false;
 
     speed += 8;
 
-    nitroButton.textContent = "🚀 BOOST!";
-    nitroButton.classList.add("disabled");
+    nitroButton.textContent =
+        "🔥 BOOST!";
 
-    const fire = document.createElement("div");
-    fire.className = "nitro-fire";
+    const fire =
+        document.createElement("div");
+
+    fire.className = "fire";
+
     player.appendChild(fire);
 
     setTimeout(()=>{
 
         speed -= 8;
+
         nitroActive = false;
 
         fire.remove();
 
-        nitroButton.textContent = "⏳ RECHARGING...";
-
-        setTimeout(()=>{
-
-            nitroAvailable = true;
-            nitroButton.textContent = "🔥 NITRO";
-            nitroButton.classList.remove("disabled");
-
-        },4000);
+        nitroButton.textContent =
+            "🚀 NITRO";
 
     },2000);
 }
 
-nitroButton.addEventListener("touchstart",(e)=>{
-    e.preventDefault();
-    useNitro();
-});
 
-nitroButton.addEventListener("click",useNitro);
+/* =========================
+   GUARD
+========================= */
 
-/* ENEMY */
-function createEnemy(){
+function useGuard(){
 
-    if(!running) return;
+    if(!running || guardActive)
+        return;
 
-    const enemy = document.createElement("div");
-    enemy.className = "enemy";
+    guardActive = true;
 
-    const colors = [
-        "linear-gradient(90deg,#0044aa,#0088ff,#0044aa)",
-        "linear-gradient(90deg,#111,#555,#111)",
-        "linear-gradient(90deg,#ff7b00,#ffc400,#ff7b00)",
-        "linear-gradient(90deg,#6512a8,#b83cff,#6512a8)"
-    ];
+    player.classList.add("guarded");
 
-    enemy.style.background =
-        colors[Math.floor(Math.random()*colors.length)];
+    guardButton.textContent =
+        "🛡️ ACTIVE";
 
-    const lane =
-        Math.floor(Math.random()*lanes.length);
+    setTimeout(()=>{
 
-    enemy.style.left = lanes[lane] + "%";
-    enemy.style.top = "-120px";
+        guardActive = false;
 
-    game.appendChild(enemy);
+        player.classList.remove(
+            "guarded"
+        );
 
-    let y = -120;
+        guardButton.textContent =
+            "🛡️ GUARD";
 
-    function move(){
-
-        if(!running){
-            enemy.remove();
-            return;
-        }
-
-        y += speed;
-        enemy.style.top = y + "px";
-
-        const p = player.getBoundingClientRect();
-        const e = enemy.getBoundingClientRect();
-
-        if(
-            p.left < e.right &&
-            p.right > e.left &&
-            p.top < e.bottom &&
-            p.bottom > e.top
-        ){
-            running = false;
-            gameOver.style.display = "block";
-
-            finalScore.textContent =
-                "🏆 Score yako: " + score;
-
-            return;
-        }
-
-        if(y > window.innerHeight + 100){
-
-            enemy.remove();
-
-            score++;
-
-            scoreText.textContent =
-                "🏆 Score: " + score;
-
-            if(score % 5 === 0){
-                speed += 0.5;
-
-                speedText.textContent =
-                    "⚡ Speed: " + speed.toFixed(1);
-            }
-
-            return;
-        }
-
-        requestAnimationFrame(move);
-    }
-
-    requestAnimationFrame(move);
+    },5000);
 }
 
-/* ROAD */
+
+/* =========================
+   WEAPON
+========================= */
+
+function useWeapon(){
+
+    if(!running || weaponActive)
+        return;
+
+    weaponActive = true;
+
+    weaponButton.textContent =
+        "💥 FIRE!";
+
+    const bullet =
+        document.createElement("div");
+
+    bullet.className =
+        "bullet";
+
+    bullet.style.left =
+        (player.offsetLeft + 25) + "px";
+
+    bullet.style.top =
+        (player.offsetTop - 20) + "px";
+
+    game.appendChild(bullet);
+
+    let y =
+        player.offsetTop - 20;
+
+    const moveBullet =
+        setInterval(()=>{
+
+            y -= 12;
+
+            bullet.style.top =
+                y + "px";
+
+            enemies.forEach(enemy=>{
+
+                const b =
+                    bullet.getBoundingClientRect();
+
+                const e =
+                    enemy.getBoundingClientRect();
+
+                if(
+                    b.left < e.right &&
+                    b.right > e.left &&
+                    b.top < e.bottom &&
+                    b.bottom > e.top
+                ){
+
+                    let d =
+                        Number(
+                            enemy.dataset.distance
+                        );
+
+                    d -= 300;
+
+                    if(d < 0)
+                        d = 0;
+
+                    enemy.dataset.distance =
+                        d;
+
+                    enemy.style.transform =
+                        "rotate(8deg)";
+
+                    setTimeout(()=>{
+
+                        enemy.style.transform =
+                            "rotate(0deg)";
+
+                    },300);
+
+                    bullet.remove();
+
+                    clearInterval(moveBullet);
+                }
+
+            });
+
+            if(y < -50){
+
+                bullet.remove();
+
+                clearInterval(moveBullet);
+            }
+
+        },30);
+
+    setTimeout(()=>{
+
+        weaponActive = false;
+
+        weaponButton.textContent =
+            "🔫 WEAPON";
+
+    },1000);
+}
+
+
+/* =========================
+   RACE LOOP
+========================= */
+
 let roadY = 0;
 
-function animateRoad(){
+function raceLoop(){
 
-    if(!running) return;
+    if(!running)
+        return;
+
+    /* PLAYER SPEED */
+
+    playerDistance += speed;
+
+    if(playerDistance >
+        raceDistance){
+
+        playerDistance =
+            raceDistance;
+
+        finishRace();
+
+        return;
+    }
+
+
+    /* ROAD */
 
     roadY += speed;
 
@@ -439,59 +764,299 @@ function animateRoad(){
     lines.forEach((line,index)=>{
 
         let offset =
-            index % 2 === 0 ? 0 : -55;
+            index % 2 === 0
+            ? 0
+            : -55;
 
         line.style.top =
             (roadY + offset) + "px";
     });
 
-    requestAnimationFrame(animateRoad);
+
+    /* FINISH LINE */
+
+    let finishProgress =
+        raceDistance -
+        playerDistance;
+
+    let finishY =
+        finishProgress * 0.12 -
+        120;
+
+    finishLine.style.top =
+        finishY + "px";
+
+
+    /* ENEMIES */
+
+    enemies.forEach(enemy=>{
+
+        let distance =
+            Number(
+                enemy.dataset.distance
+            );
+
+        distance +=
+            speed *
+            (0.85 +
+            Math.random()*0.12);
+
+        enemy.dataset.distance =
+            distance;
+
+        let relative =
+            playerDistance -
+            distance;
+
+        let y =
+            420 +
+            relative * 0.12;
+
+        enemy.style.top =
+            y + "px";
+    });
+
+
+    /* SCORE */
+
+    scoreText.textContent =
+        "🏁 Distance: " +
+        Math.floor(playerDistance)
+        + " / " +
+        raceDistance;
+
+
+    /* POSITION */
+
+    let position = 1;
+
+    enemies.forEach(enemy=>{
+
+        if(
+            Number(enemy.dataset.distance)
+            >
+            playerDistance
+        ){
+
+            position++;
+        }
+    });
+
+    positionText.textContent =
+        "🏆 Position: " +
+        position +
+        "/4";
+
+
+    /* COLLISION */
+
+    if(!guardActive){
+
+        const p =
+            player.getBoundingClientRect();
+
+        enemies.forEach(enemy=>{
+
+            const e =
+                enemy.getBoundingClientRect();
+
+            if(
+                p.left < e.right &&
+                p.right > e.left &&
+                p.top < e.bottom &&
+                p.bottom > e.top
+            ){
+
+                loseRace();
+            }
+
+        });
+    }
+
+    requestAnimationFrame(
+        raceLoop
+    );
 }
 
-/* TOUCH CONTROLS */
-document.addEventListener("touchstart",(e)=>{
 
-    if(!running) return;
+/* =========================
+   FINISH
+========================= */
 
-    if(e.target === nitroButton)
-        return;
+function finishRace(){
 
-    const x = e.touches[0].clientX;
+    running = false;
 
-    if(x < window.innerWidth/2){
+    let position = 1;
 
-        if(playerLane > 0)
-            playerLane--;
+    enemies.forEach(enemy=>{
+
+        if(
+            Number(enemy.dataset.distance)
+            >
+            playerDistance
+        ){
+
+            position++;
+        }
+    });
+
+    result.style.display =
+        "block";
+
+    if(position === 1){
+
+        resultTitle.textContent =
+            "🏆 YOU WIN!";
+
+        resultTitle.style.color =
+            "#00ff55";
+
+        resultText.textContent =
+            "🔥 Umeshinda race! Ulikuwa wa 1/4.";
 
     }else{
 
-        if(playerLane < 2)
-            playerLane++;
+        resultTitle.textContent =
+            "🏁 RACE FINISHED";
+
+        resultTitle.style.color =
+            "#ffd000";
+
+        resultText.textContent =
+            "Umemaliza nafasi ya " +
+            position +
+            "/4.";
     }
+}
 
-    movePlayer();
-});
 
-/* KEYBOARD */
-document.addEventListener("keydown",(e)=>{
+/* =========================
+   LOSE
+========================= */
 
-    if(e.key === "ArrowLeft" && playerLane > 0)
-        playerLane--;
+function loseRace(){
 
-    if(e.key === "ArrowRight" && playerLane < 2)
-        playerLane++;
+    if(!running)
+        return;
 
-    if(e.code === "Space")
-        useNitro();
+    running = false;
 
-    movePlayer();
-});
+    result.style.display =
+        "block";
 
-/* START */
-setInterval(createEnemy,1300);
+    resultTitle.textContent =
+        "💥 CRASH!";
+
+    resultTitle.style.color =
+        "#ff3333";
+
+    resultText.textContent =
+        "Umegonga mpinzani!";
+}
+
+
+/* =========================
+   CONTROLS
+========================= */
+
+document.addEventListener(
+    "touchstart",
+    (e)=>{
+
+        if(!running)
+            return;
+
+        if(
+            e.target === nitroButton ||
+            e.target === guardButton ||
+            e.target === weaponButton
+        )
+            return;
+
+        const x =
+            e.touches[0].clientX;
+
+        if(
+            x <
+            window.innerWidth / 2
+        ){
+
+            if(playerLane > 0)
+                playerLane--;
+
+        }else{
+
+            if(playerLane < 2)
+                playerLane++;
+        }
+
+        movePlayer();
+    }
+);
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+document.addEventListener(
+    "keydown",
+    (e)=>{
+
+        if(
+            e.key === "ArrowLeft" &&
+            playerLane > 0
+        ){
+
+            playerLane--;
+        }
+
+        if(
+            e.key === "ArrowRight" &&
+            playerLane < 2
+        ){
+
+            playerLane++;
+        }
+
+        if(e.code === "Space")
+            useNitro();
+
+        movePlayer();
+    }
+);
+
+
+/* =========================
+   POWER BUTTONS
+========================= */
+
+nitroButton.addEventListener(
+    "click",
+    useNitro
+);
+
+guardButton.addEventListener(
+    "click",
+    useGuard
+);
+
+weaponButton.addEventListener(
+    "click",
+    useWeapon
+);
+
+
+/* =========================
+   START
+========================= */
 
 movePlayer();
-animateRoad();
+
+startCountdown();
+
+raceLoop();
 
 </script>
 
