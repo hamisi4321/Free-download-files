@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Speed Racing</title>
+<title>Speed Racing v0.3</title>
 
 <style>
 *{
@@ -39,24 +39,18 @@ body{
     overflow:hidden;
 }
 
-/* road lines */
-.line{
+/* ROAD LINES */
+.line,.line2{
     position:absolute;
     width:7px;
     height:100px;
     background:#fff;
-    left:33.33%;
 }
 
-.line2{
-    position:absolute;
-    width:7px;
-    height:100px;
-    background:#fff;
-    left:66.66%;
-}
+.line{left:33.33%}
+.line2{left:66.66%}
 
-/* mazingira */
+/* TREES */
 .tree{
     position:absolute;
     width:45px;
@@ -76,7 +70,7 @@ body{
     top:35px;
 }
 
-/* PLAYER CAR */
+/* PLAYER */
 .car{
     position:absolute;
     width:58px;
@@ -163,6 +157,48 @@ body{
     text-shadow:2px 2px 3px #000;
 }
 
+/* NITRO */
+#nitro{
+    position:absolute;
+    right:15px;
+    top:15px;
+    z-index:30;
+    padding:13px 18px;
+    border:3px solid #fff;
+    border-radius:12px;
+    background:#ff6a00;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    box-shadow:0 3px 8px #000;
+}
+
+#nitro:active{
+    transform:scale(.92);
+}
+
+#nitro.disabled{
+    background:#555;
+    opacity:.7;
+}
+
+/* NITRO EFFECT */
+.nitro-fire{
+    position:absolute;
+    width:20px;
+    height:35px;
+    background:linear-gradient(#fff700,#ff6500,#ff0000);
+    left:19px;
+    top:100px;
+    border-radius:50%;
+    animation:fire .12s infinite alternate;
+}
+
+@keyframes fire{
+    from{transform:scaleY(1)}
+    to{transform:scaleY(1.4)}
+}
+
 /* GAME OVER */
 #gameOver{
     display:none;
@@ -215,6 +251,8 @@ button{
     <div id="score">🏆 Score: 0</div>
     <div id="speed">⚡ Speed: 5</div>
 
+    <button id="nitro">🔥 NITRO</button>
+
     <div id="player" class="car">
         <div class="light left"></div>
         <div class="light right"></div>
@@ -236,6 +274,7 @@ const scoreText = document.getElementById("score");
 const speedText = document.getElementById("speed");
 const gameOver = document.getElementById("gameOver");
 const finalScore = document.getElementById("finalScore");
+const nitroButton = document.getElementById("nitro");
 
 const lines = [
     document.getElementById("l1"),
@@ -249,13 +288,62 @@ let score = 0;
 let speed = 5;
 let running = true;
 
+/* NITRO */
+let nitroActive = false;
+let nitroAvailable = true;
+
 const lanes = [25,50,75];
 
 function movePlayer(){
-
     player.style.left = lanes[playerLane] + "%";
 }
 
+/* NITRO FUNCTION */
+function useNitro(){
+
+    if(!running || !nitroAvailable || nitroActive)
+        return;
+
+    nitroActive = true;
+    nitroAvailable = false;
+
+    speed += 8;
+
+    nitroButton.textContent = "🚀 BOOST!";
+    nitroButton.classList.add("disabled");
+
+    const fire = document.createElement("div");
+    fire.className = "nitro-fire";
+    player.appendChild(fire);
+
+    setTimeout(()=>{
+
+        speed -= 8;
+        nitroActive = false;
+
+        fire.remove();
+
+        nitroButton.textContent = "⏳ RECHARGING...";
+
+        setTimeout(()=>{
+
+            nitroAvailable = true;
+            nitroButton.textContent = "🔥 NITRO";
+            nitroButton.classList.remove("disabled");
+
+        },4000);
+
+    },2000);
+}
+
+nitroButton.addEventListener("touchstart",(e)=>{
+    e.preventDefault();
+    useNitro();
+});
+
+nitroButton.addEventListener("click",useNitro);
+
+/* ENEMY */
 function createEnemy(){
 
     if(!running) return;
@@ -304,8 +392,10 @@ function createEnemy(){
         ){
             running = false;
             gameOver.style.display = "block";
+
             finalScore.textContent =
                 "🏆 Score yako: " + score;
+
             return;
         }
 
@@ -320,6 +410,7 @@ function createEnemy(){
 
             if(score % 5 === 0){
                 speed += 0.5;
+
                 speedText.textContent =
                     "⚡ Speed: " + speed.toFixed(1);
             }
@@ -333,7 +424,7 @@ function createEnemy(){
     requestAnimationFrame(move);
 }
 
-/* moving road */
+/* ROAD */
 let roadY = 0;
 
 function animateRoad(){
@@ -346,8 +437,12 @@ function animateRoad(){
         roadY = 0;
 
     lines.forEach((line,index)=>{
-        let offset = index % 2 === 0 ? 0 : -55;
-        line.style.top = (roadY + offset) + "px";
+
+        let offset =
+            index % 2 === 0 ? 0 : -55;
+
+        line.style.top =
+            (roadY + offset) + "px";
     });
 
     requestAnimationFrame(animateRoad);
@@ -357,6 +452,9 @@ function animateRoad(){
 document.addEventListener("touchstart",(e)=>{
 
     if(!running) return;
+
+    if(e.target === nitroButton)
+        return;
 
     const x = e.touches[0].clientX;
 
@@ -374,7 +472,7 @@ document.addEventListener("touchstart",(e)=>{
     movePlayer();
 });
 
-/* keyboard support */
+/* KEYBOARD */
 document.addEventListener("keydown",(e)=>{
 
     if(e.key === "ArrowLeft" && playerLane > 0)
@@ -383,9 +481,13 @@ document.addEventListener("keydown",(e)=>{
     if(e.key === "ArrowRight" && playerLane < 2)
         playerLane++;
 
+    if(e.code === "Space")
+        useNitro();
+
     movePlayer();
 });
 
+/* START */
 setInterval(createEnemy,1300);
 
 movePlayer();
