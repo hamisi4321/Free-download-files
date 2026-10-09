@@ -36,6 +36,7 @@ body{
     background:#303030;
     border-left:8px solid white;
     border-right:8px solid white;
+    overflow:hidden;
 }
 
 /* ROAD LINES */
@@ -125,12 +126,12 @@ body{
 .light.right{right:7px}
 
 /* HUD */
-#score{
+#distance{
     position:absolute;
-    top:15px;
-    left:15px;
+    top:12px;
+    left:12px;
     color:white;
-    font-size:20px;
+    font-size:19px;
     font-weight:bold;
     z-index:30;
     text-shadow:2px 2px 3px #000;
@@ -138,8 +139,8 @@ body{
 
 #position{
     position:absolute;
-    top:42px;
-    left:15px;
+    top:40px;
+    left:12px;
     color:white;
     font-size:18px;
     font-weight:bold;
@@ -150,27 +151,22 @@ body{
 /* POWER UPS */
 #powers{
     position:absolute;
-    right:10px;
-    top:10px;
+    right:8px;
+    top:8px;
     z-index:40;
     display:flex;
     flex-direction:column;
-    gap:8px;
+    gap:7px;
 }
 
 .power{
     width:115px;
-    padding:10px 5px;
+    padding:10px 4px;
     border:2px solid white;
     border-radius:10px;
     color:white;
     font-weight:bold;
     font-size:15px;
-    background:#222;
-}
-
-.power:active{
-    transform:scale(.92);
 }
 
 #nitro{
@@ -188,19 +184,19 @@ body{
 /* FINISH */
 #finishLine{
     position:absolute;
-    top:-120px;
     left:15%;
     width:70%;
-    height:80px;
-    z-index:7;
+    height:75px;
+    top:-100px;
+    z-index:8;
 
     background:
     repeating-linear-gradient(
         45deg,
         white 0px,
-        white 20px,
-        black 20px,
-        black 40px
+        white 18px,
+        black 18px,
+        black 36px
     );
 
     border:4px solid white;
@@ -210,7 +206,7 @@ body{
     align-items:center;
 
     color:red;
-    font-size:25px;
+    font-size:23px;
     font-weight:bold;
 }
 
@@ -229,25 +225,25 @@ body{
     background:rgba(0,0,0,.25);
 }
 
-/* GAME OVER / WIN */
+/* RESULT */
 #result{
     display:none;
     position:absolute;
     inset:0;
     z-index:200;
-    background:rgba(0,0,0,.82);
+    background:rgba(0,0,0,.84);
     color:white;
     text-align:center;
     padding-top:28vh;
 }
 
 #result h1{
-    font-size:48px;
+    font-size:46px;
     margin-bottom:15px;
 }
 
 #result p{
-    font-size:24px;
+    font-size:22px;
 }
 
 #restart{
@@ -293,7 +289,7 @@ body{
         0 0 30px #00aaff !important;
 }
 
-/* WEAPON */
+/* BULLET */
 .bullet{
     position:absolute;
     width:8px;
@@ -319,27 +315,23 @@ body{
 
     </div>
 
-    <!-- TREES -->
     <div class="tree" style="left:3%;top:100px"></div>
     <div class="tree" style="left:88%;top:220px"></div>
     <div class="tree" style="left:5%;top:500px"></div>
     <div class="tree" style="left:87%;top:650px"></div>
 
-    <!-- FINISH -->
     <div id="finishLine">
         🏁 FINISH 🏁
     </div>
 
-    <!-- HUD -->
-    <div id="score">
-        🏁 Distance: 0
+    <div id="distance">
+        🏁 0 / 5000 m
     </div>
 
     <div id="position">
-        🏆 Position: 4/4
+        🏆 4 / 4
     </div>
 
-    <!-- POWER UPS -->
     <div id="powers">
 
         <button class="power" id="nitro">
@@ -356,7 +348,6 @@ body{
 
     </div>
 
-    <!-- PLAYER -->
     <div id="player" class="car">
 
         <div class="light left"></div>
@@ -364,21 +355,17 @@ body{
 
     </div>
 
-    <!-- COUNTDOWN -->
     <div id="countdown">
         3
     </div>
 
-    <!-- RESULT -->
     <div id="result">
 
         <h1 id="resultTitle">
             🏆 YOU WIN!
         </h1>
 
-        <p id="resultText">
-            Umeshinda race!
-        </p>
+        <p id="resultText"></p>
 
         <button id="restart"
                 onclick="location.reload()">
@@ -392,17 +379,20 @@ body{
 <script>
 
 /* =========================
-   GAME VARIABLES
+   ELEMENTS
 ========================= */
 
 const game =
     document.getElementById("game");
 
+const road =
+    document.getElementById("road");
+
 const player =
     document.getElementById("player");
 
-const scoreText =
-    document.getElementById("score");
+const distanceText =
+    document.getElementById("distance");
 
 const positionText =
     document.getElementById("position");
@@ -438,25 +428,32 @@ const lines = [
     document.getElementById("r2")
 ];
 
+
+/* =========================
+   GAME DATA
+========================= */
+
 const lanes = [25,50,75];
 
 let playerLane = 1;
 
-let playerDistance = 0;
+let distance = 0;
 
-let raceDistance = 5000;
+const finishDistance = 5000;
 
 let speed = 5;
 
 let running = false;
 
-let nitroActive = false;
+let nitro = false;
 
-let guardActive = false;
+let guard = false;
 
-let weaponActive = false;
+let weapon = false;
 
-let enemies = [];
+let racers = [];
+
+let roadOffset = 0;
 
 
 /* =========================
@@ -471,10 +468,10 @@ function movePlayer(){
 
 
 /* =========================
-   CREATE RACERS
+   CREATE OPPONENTS
 ========================= */
 
-function createRacers(){
+function createOpponents(){
 
     const colors = [
 
@@ -483,30 +480,39 @@ function createRacers(){
         "linear-gradient(90deg,#111,#555,#111)",
 
         "linear-gradient(90deg,#ff7b00,#ffc400,#ff7b00)"
-
     ];
 
     for(let i=0;i<3;i++){
 
-        const enemy =
+        const car =
             document.createElement("div");
 
-        enemy.className = "enemy";
+        car.className =
+            "enemy";
 
-        enemy.style.background =
+        car.style.background =
             colors[i];
 
-        enemy.style.left =
+        car.style.left =
             lanes[i] + "%";
 
-        enemy.style.top =
-            (window.innerHeight - 170) + "px";
+        car.style.top =
+            (window.innerHeight -
+             210 -
+             i*15) + "px";
 
-        enemy.dataset.distance = "0";
+        car.dataset.distance =
+            String(i * 80);
 
-        game.appendChild(enemy);
+        car.dataset.speed =
+            String(
+                4.7 +
+                Math.random()*0.8
+            );
 
-        enemies.push(enemy);
+        game.appendChild(car);
+
+        racers.push(car);
     }
 }
 
@@ -515,37 +521,42 @@ function createRacers(){
    COUNTDOWN
 ========================= */
 
-function startCountdown(){
+function countdownStart(){
 
-    let number = 3;
+    let n = 3;
 
-    countdown.textContent = number;
+    countdown.textContent =
+        n;
 
     const timer =
         setInterval(()=>{
 
-            number--;
+            n--;
 
-            if(number > 0){
+            if(n > 0){
 
                 countdown.textContent =
-                    number;
+                    n;
 
             }else{
 
                 countdown.textContent =
                     "GO!";
 
-                running = true;
-
-                createRacers();
-
                 setTimeout(()=>{
 
                     countdown.style.display =
                         "none";
 
-                },600);
+                },500);
+
+                running = true;
+
+                createOpponents();
+
+                requestAnimationFrame(
+                    gameLoop
+                );
 
                 clearInterval(timer);
             }
@@ -560,10 +571,10 @@ function startCountdown(){
 
 function useNitro(){
 
-    if(!running || nitroActive)
+    if(!running || nitro)
         return;
 
-    nitroActive = true;
+    nitro = true;
 
     speed += 8;
 
@@ -573,7 +584,8 @@ function useNitro(){
     const fire =
         document.createElement("div");
 
-    fire.className = "fire";
+    fire.className =
+        "fire";
 
     player.appendChild(fire);
 
@@ -581,7 +593,7 @@ function useNitro(){
 
         speed -= 8;
 
-        nitroActive = false;
+        nitro = false;
 
         fire.remove();
 
@@ -598,19 +610,21 @@ function useNitro(){
 
 function useGuard(){
 
-    if(!running || guardActive)
+    if(!running || guard)
         return;
 
-    guardActive = true;
+    guard = true;
 
-    player.classList.add("guarded");
+    player.classList.add(
+        "guarded"
+    );
 
     guardButton.textContent =
         "🛡️ ACTIVE";
 
     setTimeout(()=>{
 
-        guardActive = false;
+        guard = false;
 
         player.classList.remove(
             "guarded"
@@ -629,10 +643,10 @@ function useGuard(){
 
 function useWeapon(){
 
-    if(!running || weaponActive)
+    if(!running || weapon)
         return;
 
-    weaponActive = true;
+    weapon = true;
 
     weaponButton.textContent =
         "💥 FIRE!";
@@ -644,65 +658,71 @@ function useWeapon(){
         "bullet";
 
     bullet.style.left =
-        (player.offsetLeft + 25) + "px";
+        (
+            player.offsetLeft +
+            25
+        ) + "px";
 
     bullet.style.top =
-        (player.offsetTop - 20) + "px";
+        (
+            player.offsetTop -
+            20
+        ) + "px";
 
     game.appendChild(bullet);
 
     let y =
         player.offsetTop - 20;
 
-    const moveBullet =
+    const timer =
         setInterval(()=>{
 
-            y -= 12;
+            y -= 14;
 
             bullet.style.top =
                 y + "px";
 
-            enemies.forEach(enemy=>{
+            racers.forEach(car=>{
 
                 const b =
                     bullet.getBoundingClientRect();
 
-                const e =
-                    enemy.getBoundingClientRect();
+                const c =
+                    car.getBoundingClientRect();
 
                 if(
-                    b.left < e.right &&
-                    b.right > e.left &&
-                    b.top < e.bottom &&
-                    b.bottom > e.top
+                    b.left < c.right &&
+                    b.right > c.left &&
+                    b.top < c.bottom &&
+                    b.bottom > c.top
                 ){
 
                     let d =
                         Number(
-                            enemy.dataset.distance
+                            car.dataset.distance
                         );
 
-                    d -= 300;
+                    d -= 350;
 
                     if(d < 0)
                         d = 0;
 
-                    enemy.dataset.distance =
+                    car.dataset.distance =
                         d;
 
-                    enemy.style.transform =
-                        "rotate(8deg)";
+                    car.style.opacity =
+                        "0.55";
 
                     setTimeout(()=>{
 
-                        enemy.style.transform =
-                            "rotate(0deg)";
+                        car.style.opacity =
+                            "1";
 
-                    },300);
+                    },500);
 
                     bullet.remove();
 
-                    clearInterval(moveBullet);
+                    clearInterval(timer);
                 }
 
             });
@@ -711,42 +731,172 @@ function useWeapon(){
 
                 bullet.remove();
 
-                clearInterval(moveBullet);
+                clearInterval(timer);
             }
 
         },30);
 
     setTimeout(()=>{
 
-        weaponActive = false;
+        weapon = false;
 
         weaponButton.textContent =
             "🔫 WEAPON";
 
-    },1000);
+    },1200);
 }
 
 
 /* =========================
-   RACE LOOP
+   MAIN GAME LOOP
 ========================= */
 
-let roadY = 0;
-
-function raceLoop(){
+function gameLoop(){
 
     if(!running)
         return;
 
-    /* PLAYER SPEED */
 
-    playerDistance += speed;
+    /* PLAYER MOVEMENT */
 
-    if(playerDistance >
-        raceDistance){
+    distance += speed * 0.45;
 
-        playerDistance =
-            raceDistance;
+
+    /* ROAD MOVEMENT */
+
+    roadOffset += speed;
+
+    if(roadOffset >= 110)
+        roadOffset = 0;
+
+    lines.forEach((line,index)=>{
+
+        const offset =
+            index % 2 === 0
+            ? 0
+            : -55;
+
+        line.style.top =
+            (roadOffset + offset) +
+            "px";
+    });
+
+
+    /* FINISH MOVEMENT */
+
+    const remaining =
+        finishDistance -
+        distance;
+
+    const finishPosition =
+        remaining * 0.16 -
+        100;
+
+    finishLine.style.top =
+        finishPosition + "px";
+
+
+    /* OPPONENT MOVEMENT */
+
+    racers.forEach(car=>{
+
+        let d =
+            Number(
+                car.dataset.distance
+            );
+
+        let s =
+            Number(
+                car.dataset.speed
+            );
+
+        d += s;
+
+        car.dataset.distance =
+            d;
+
+        /*
+        Relative position:
+        opponent ahead = higher
+        opponent behind = lower
+        */
+
+        const relative =
+            d - distance;
+
+        let y =
+            470 -
+            relative * 0.18;
+
+        car.style.top =
+            y + "px";
+    });
+
+
+    /* HUD */
+
+    distanceText.textContent =
+        "🏁 " +
+        Math.floor(distance) +
+        " / " +
+        finishDistance +
+        " m";
+
+
+    /* POSITION */
+
+    let place = 1;
+
+    racers.forEach(car=>{
+
+        if(
+            Number(
+                car.dataset.distance
+            ) > distance
+        ){
+
+            place++;
+        }
+    });
+
+    positionText.textContent =
+        "🏆 " +
+        place +
+        " / 4";
+
+
+    /* COLLISION */
+
+    if(!guard){
+
+        const p =
+            player.getBoundingClientRect();
+
+        racers.forEach(car=>{
+
+            const c =
+                car.getBoundingClientRect();
+
+            if(
+                p.left < c.right &&
+                p.right > c.left &&
+                p.top < c.bottom &&
+                p.bottom > c.top
+            ){
+
+                crash();
+
+            }
+        });
+    }
+
+
+    /* FINISH */
+
+    if(
+        distance >=
+        finishDistance
+    ){
 
         finishRace();
 
@@ -754,188 +904,17 @@ function raceLoop(){
     }
 
 
-    /* ROAD */
-
-    roadY += speed;
-
-    if(roadY > 110)
-        roadY = 0;
-
-    lines.forEach((line,index)=>{
-
-        let offset =
-            index % 2 === 0
-            ? 0
-            : -55;
-
-        line.style.top =
-            (roadY + offset) + "px";
-    });
-
-
-    /* FINISH LINE */
-
-    let finishProgress =
-        raceDistance -
-        playerDistance;
-
-    let finishY =
-        finishProgress * 0.12 -
-        120;
-
-    finishLine.style.top =
-        finishY + "px";
-
-
-    /* ENEMIES */
-
-    enemies.forEach(enemy=>{
-
-        let distance =
-            Number(
-                enemy.dataset.distance
-            );
-
-        distance +=
-            speed *
-            (0.85 +
-            Math.random()*0.12);
-
-        enemy.dataset.distance =
-            distance;
-
-        let relative =
-            playerDistance -
-            distance;
-
-        let y =
-            420 +
-            relative * 0.12;
-
-        enemy.style.top =
-            y + "px";
-    });
-
-
-    /* SCORE */
-
-    scoreText.textContent =
-        "🏁 Distance: " +
-        Math.floor(playerDistance)
-        + " / " +
-        raceDistance;
-
-
-    /* POSITION */
-
-    let position = 1;
-
-    enemies.forEach(enemy=>{
-
-        if(
-            Number(enemy.dataset.distance)
-            >
-            playerDistance
-        ){
-
-            position++;
-        }
-    });
-
-    positionText.textContent =
-        "🏆 Position: " +
-        position +
-        "/4";
-
-
-    /* COLLISION */
-
-    if(!guardActive){
-
-        const p =
-            player.getBoundingClientRect();
-
-        enemies.forEach(enemy=>{
-
-            const e =
-                enemy.getBoundingClientRect();
-
-            if(
-                p.left < e.right &&
-                p.right > e.left &&
-                p.top < e.bottom &&
-                p.bottom > e.top
-            ){
-
-                loseRace();
-            }
-
-        });
-    }
-
     requestAnimationFrame(
-        raceLoop
+        gameLoop
     );
 }
 
 
 /* =========================
-   FINISH
+   CRASH
 ========================= */
 
-function finishRace(){
-
-    running = false;
-
-    let position = 1;
-
-    enemies.forEach(enemy=>{
-
-        if(
-            Number(enemy.dataset.distance)
-            >
-            playerDistance
-        ){
-
-            position++;
-        }
-    });
-
-    result.style.display =
-        "block";
-
-    if(position === 1){
-
-        resultTitle.textContent =
-            "🏆 YOU WIN!";
-
-        resultTitle.style.color =
-            "#00ff55";
-
-        resultText.textContent =
-            "🔥 Umeshinda race! Ulikuwa wa 1/4.";
-
-    }else{
-
-        resultTitle.textContent =
-            "🏁 RACE FINISHED";
-
-        resultTitle.style.color =
-            "#ffd000";
-
-        resultText.textContent =
-            "Umemaliza nafasi ya " +
-            position +
-            "/4.";
-    }
-}
-
-
-/* =========================
-   LOSE
-========================= */
-
-function loseRace(){
+function crash(){
 
     if(!running)
         return;
@@ -952,17 +931,72 @@ function loseRace(){
         "#ff3333";
 
     resultText.textContent =
-        "Umegonga mpinzani!";
+        "Umegonga gari la mpinzani!";
 }
 
 
 /* =========================
-   CONTROLS
+   FINISH
+========================= */
+
+function finishRace(){
+
+    if(!running)
+        return;
+
+    running = false;
+
+    let place = 1;
+
+    racers.forEach(car=>{
+
+        if(
+            Number(
+                car.dataset.distance
+            ) > distance
+        ){
+
+            place++;
+        }
+    });
+
+    result.style.display =
+        "block";
+
+    if(place === 1){
+
+        resultTitle.textContent =
+            "🏆 YOU WIN!";
+
+        resultTitle.style.color =
+            "#00ff55";
+
+        resultText.textContent =
+            "🔥 Umeshinda! Nafasi 1/4.";
+
+    }else{
+
+        resultTitle.textContent =
+            "🏁 RACE FINISHED";
+
+        resultTitle.style.color =
+            "#ffd000";
+
+        resultText.textContent =
+            "Umemaliza nafasi " +
+            place +
+            "/4.";
+    }
+}
+
+
+/* =========================
+   TOUCH
 ========================= */
 
 document.addEventListener(
     "touchstart",
-    (e)=>{
+    function(e){
 
         if(!running)
             return;
@@ -971,8 +1005,10 @@ document.addEventListener(
             e.target === nitroButton ||
             e.target === guardButton ||
             e.target === weaponButton
-        )
+        ){
+
             return;
+        }
 
         const x =
             e.touches[0].clientX;
@@ -1002,7 +1038,7 @@ document.addEventListener(
 
 document.addEventListener(
     "keydown",
-    (e)=>{
+    function(e){
 
         if(
             e.key === "ArrowLeft" &&
@@ -1020,8 +1056,12 @@ document.addEventListener(
             playerLane++;
         }
 
-        if(e.code === "Space")
+        if(
+            e.code === "Space"
+        ){
+
             useNitro();
+        }
 
         movePlayer();
     }
@@ -1029,34 +1069,26 @@ document.addEventListener(
 
 
 /* =========================
-   POWER BUTTONS
+   BUTTONS
 ========================= */
 
-nitroButton.addEventListener(
-    "click",
-    useNitro
-);
+nitroButton.onclick =
+    useNitro;
 
-guardButton.addEventListener(
-    "click",
-    useGuard
-);
+guardButton.onclick =
+    useGuard;
 
-weaponButton.addEventListener(
-    "click",
-    useWeapon
-);
+weaponButton.onclick =
+    useWeapon;
 
 
 /* =========================
-   START
+   START GAME
 ========================= */
 
 movePlayer();
 
-startCountdown();
-
-raceLoop();
+countdownStart();
 
 </script>
 
